@@ -1,43 +1,67 @@
 const { createtoken } = require("../middleware/createToken")
 const User = require("../Model/User")
+const asyncHandler=require('../utils/asyncHandler')
 
+exports.createUser=asyncHandler(async(req,res)=>{
+   
+    const{name,email,password}=req.body;
 
-const newUser=async(req,res)=>{
-    try {
-        const {name,email,password,role}=req.body
-       
-        const user=await User.create({name,email,password, role: role || 'user' })
-       return res.status(200).json({message:'new user create',data:user})
-    } catch (error) {
-        console.log(error)
-        res.status(500).json({message:'server error'})
+    //validate input
+    if(!name||!email||!password){
+        return res.status(400).json({success:false,error:"field is required"})
     }
-}
 
-const login=async(req,res)=>{
-    try {
-        const{email,password}=req.body 
-        const user=await User.findOne({email:email})
-        if(!user){
-          return  res.status(401).json({error:'invalid email and password '})
-        }
-        const validPassword=await user.matchPassword(password)
-        if(!validPassword){
-            return    res.status(401).json({error:'invalid email and password '})
-        }
-
-        const token = createtoken(user);
-
-        return res.status(200).json({
-          message: "Login successful",
-          token,
-          email: user.email,
-        
-        });
-        
-    } catch (error) {
-        console.log(error);
-        res.status(500).json({message:"server error"})
+    // check existing user
+    const userExists=await User.findOne({email})
+    if(userExists){
+        return res.status.json(409).json({success:false,error:"user already exists"})
     }
-}
-module.exports={newUser,login}
+    
+     // 3️⃣ Create user
+  const user = await User.create({
+    name,
+    email,
+    password
+  });
+
+  // 4️⃣ Send safe response only
+  res.status(201).json({
+    success: true,
+    data: {
+      id: user._id,
+      name: user.name,
+      email: user.email
+    }
+  });
+
+})
+
+
+exports.login=asyncHandler(async(req,res)=>{
+    const{email,password}=req.body;
+
+    //validate presense
+    if(!email||!password){
+        return res.status(400).json({success:false,error:"email and passwor are required"})
+    }
+
+    //find user and password explictly
+    const user=await User.findOne({email}).select("+password");
+
+    if(!user){
+        return res.status(401).json({
+            success:false,
+            error:"invalid credentials"
+        })
+    }
+
+    //compare password
+    const isMatch=await user.matchPassword(password)
+    if(!isMatch){
+        return res.status(401).json({success:false,error:"invalid credentials"})
+    }
+
+    const token=createtoken(user)
+
+    res.status(200).json({success:true,token,})
+})

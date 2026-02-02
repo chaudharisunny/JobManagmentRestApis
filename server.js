@@ -1,9 +1,12 @@
 const express=require('express')
 const app=express()
 const port=3000
-const db_connect=require('./Model/config')
+const dotenv=require('dotenv')
 const routesIndex=require('./router/index')
+const connectDB = require('./config/db')
 
+connectDB()
+dotenv.config()
 app.use(express.json())
 app.use('/',routesIndex)
 

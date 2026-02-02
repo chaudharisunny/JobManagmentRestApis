@@ -1,81 +1,89 @@
 const Jobs = require("../Model/job")
+const asyncHandler=require("../utils/asyncHandler")
 
+exports.newJob=asyncHandler(async(req,res)=>{
 
-const newJob = async (req, res) => {
-  try {
-   
-    const { title, description, jobType, salary, location } = req.body
-
-    if( !title|| !description || !jobType || !salary|| !location ){
-        return res.status(401).json({error:"all field are required "})
+    if(!req.user){
+        return res.status(401).json({error:"unauthorized"})
     }
-    const createJob = await Jobs.create({
-      admin: req.user._id,     // ✅ admin reference
-      title,
-      description,             // ✅ correct field
-      jobType,
-      salary,
-      location
+    const{title,description,salary,jobType,location}=req.body 
+
+    if(!title||!description||!salary||!jobType||!location){
+        return res.status(409).json({success:false,error:"all field are required"})
+    }
+
+    const createJob= await Jobs.create({
+        title,description,salary,jobType,location,createdBy: req.user._id 
     })
+
+   return res.status(200).json({success:true,data:createJob})
     
-    return res.status(201).json({
-      message: 'New job created successfully',
-      data: createJob
+})
+
+ exports.listJob=asyncHandler(async(req,res)=>{
+    const allJobs=await Jobs.find()
+    return res.status(200).json({
+        success:true,
+        count:allJobs.length,
+        data:allJobs
     })
-  } catch (error) {
-    console.log(error)
-    // console.log("REQ.USER 👉", req.user._id)
+})
 
-    res.status(500).json({ message: 'Server error' })
-  }
-}
+ exports.jobOne=asyncHandler(async(req,res)=>{
+   
+    const{id}=req.params 
+    
+    const selectJob=await Jobs.findById(id)
+    if(!selectJob){
+        return res.status(404).json({
+            success:false,
+            message:"job not found"
+        })
+    }
+    res.status(200).json({success:true,data:selectJob})
+})
 
-const listJob=async(req,res)=>{
-    try {
-        const allJobs=await Jobs.find()
-        return res.status(201).json({data:allJobs})
-    } catch (error) {
-        res.status(500).json({error:'server error'})
+exports.updateJob = asyncHandler(async (req, res) => {
+    const { id } = req.params
+  
+    const job = await Jobs.findByIdAndUpdate(
+      id,
+      req.body,
+      {
+        new: true,
+        runValidators: true
+      }
+    )
+  
+    // Case 1: Job ID is valid but record does NOT exist
+    if (!job) {
+      return res.status(404).json({
+        success: false,
+        message: "Job not found"
+      })
     }
-}
-const jobOne=async(req,res)=>{
-    try {
-        const{id}=req.params 
-        if(!id){
-            return res.status(401).json({error:"id is not found"})
-        }
-        const selectJob=await Jobs.findById({_id:id})
-        return res.status(201).json({data:selectJob})
-    } catch (error) {
-        console.log(error);
-        
-        res.status(500).json({error:'server error'})
+  
+    // Case 2: Job updated successfully
+    res.status(200).json({
+      success: true,
+      data: job
+    })
+  })
+  
+exports.deleteJob=asyncHandler(async(req,res)=>{
+    const {id}=req.params 
+    
+    const deleteJob=await Jobs.findByIdAndDelete(id)
+    if(!deleteJob){
+       return res.status(404).json(
+        {
+            success:false,
+            error:"job not found"
+        })
     }
-}
-const updateJob=async(req,res)=>{
-    try {
-        const {id}=req.params 
-        if(!id){
-            return res.status(401).json({error:"id is not found"})
-        }
-        const editJob= await Jobs.findByIdAndUpdate({_id:id},req.body,{new:true})
-        return res.status(201).json({data:editJob})
-    } catch (error) {
-        console.log(error);
-        res.status(500).json({error:'server error'})
-    }
-}
-const deleteJob=async(req,res)=>{
-    try {
-        const {id}=req.params 
-        if(!id){
-            return res.status(401).json({error:"id is not found"})
-        }
-        await Jobs.findByIdAndDelete({_id:id})
-        return res.status(201).json({message:'successfully delete job'})
-    } catch (error) {
-        console.log(error);
-        res.status(500).json({error:'server error'})
-    }
-}
-module.exports={newJob,listJob,jobOne,updateJob,deleteJob}
+    res.status(200).json(
+        {
+            success:true,
+            message:"job deleted successfully"
+        })
+})

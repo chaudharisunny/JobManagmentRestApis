@@ -1,16 +1,13 @@
 const mongoose=require('mongoose')
 const jobSchema=new mongoose.Schema({
-    admin:{
-        type:mongoose.Schema.Types.ObjectId,
-        ref:'User',
-        required:true
-    },
+    
     title:{
         type:String,
-        required:true 
+        required:true,
+        trim:true, 
     },
     salary:{
-        type:String,
+        type:Number,
         required:true 
     },
      description:{
@@ -25,6 +22,11 @@ const jobSchema=new mongoose.Schema({
         type:String,
         required:true 
     },
+    createdBy:{
+        type:mongoose.Schema.Types.ObjectId,
+        ref:"User",
+        required:true
+    }
  },{timestamps:true}) 
 
  const Jobs=mongoose.model('Jobs',jobSchema)
