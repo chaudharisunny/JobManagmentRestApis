@@ -5,9 +5,10 @@ const { newAdmin, adminLogin } = require('../Controller/admin')
 
 const { adminOnly } = require('../middleware/authorized')
 const protect = require('../middleware/protect')
-const { createUser, login } = require('../Controller/user')
+const { createUser, login, uploadResume, getResume } = require('../Controller/user')
 const { newUserValidator, newJobValidator } = require('../validator/authValidator')
 const { validate } = require('../middleware/validate')
+const upload = require('../middleware/upload')
 
 
 const routes=express.Router()
@@ -20,6 +21,8 @@ routes.get('/index',(req,res)=>{
 
 routes.post('/newuser',newUserValidator,validate,createUser)
 routes.post('/login',login)
+routes.post('/user/me/resume',protect,upload.single("resume"),uploadResume)
+routes.get('/user/me/resume',protect,getResume);
 routes.post('/admin/signup',newAdmin)
 routes.post('/admin',adminLogin) 
 routes.post('/admin/newjob',protect,adminOnly,newJobValidator,validate,newJob)

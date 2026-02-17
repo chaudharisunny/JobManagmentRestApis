@@ -87,3 +87,9 @@ exports.deleteJob=asyncHandler(async(req,res)=>{
             message:"job deleted successfully"
         })
 })
+
+exports.applyJob=asyncHandler(async(req,res)=>{
+    const{id}=req.body
+
+    
+})

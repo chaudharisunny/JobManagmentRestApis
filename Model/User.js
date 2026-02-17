@@ -1,6 +1,14 @@
 const mongoose=require('mongoose')
 const bcrypt=require('bcrypt')
 
+const resumeSchema= new mongoose.Schema({
+    url:String,
+    public_id:String,
+    uploadedAt:{
+        type:Date,
+        default:Date.now
+    }
+})
 const userSchema=new mongoose.Schema({
     name:{
         type:String,
@@ -23,7 +31,8 @@ const userSchema=new mongoose.Schema({
         type:String,
         enum:["user","admin"],
         default:"user"
-    }
+    },
+    resume:resumeSchema
 },{timestamps:true})
 
 userSchema.pre('save', async function () {
