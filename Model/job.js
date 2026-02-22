@@ -22,9 +22,18 @@ const jobSchema=new mongoose.Schema({
         type:String,
         required:true 
     },
+    category: {
+        type: String,
+        required: true,
+        trim: true
+    },
+    skills: [{
+        type: String,
+        trim: true
+    }],
     createdBy:{
         type:mongoose.Schema.Types.ObjectId,
-        ref:"User",
+        ref:"Recruiter",
         required:true
     }
  },{timestamps:true}) 

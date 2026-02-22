@@ -8,7 +8,7 @@ const connectDB = require('./config/db')
 connectDB()
 dotenv.config()
 app.use(express.json())
-app.use('/',routesIndex)
+app.use('/api/v1',routesIndex)
 
 app.listen(port,()=>{
     console.log(`app listen port ${port} connect to server`)

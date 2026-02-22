@@ -1,14 +1,17 @@
 const express=require('express')
 
-const { newJob, listJob, jobOne, updateJob, deleteJob } = require('../Controller/jobs')
-const { newAdmin, adminLogin } = require('../Controller/admin')
+const { newJob, listJob, jobOne, updateJob, deleteJob, } = require('../Controller/jobs')
+const { applyJob } = require('../Controller/applyJob')
+const { newAdmin, adminLogin, logoutAdmin } = require('../Controller/admin')
 
 const { adminOnly } = require('../middleware/authorized')
 const protect = require('../middleware/protect')
-const { createUser, login, uploadResume, getResume } = require('../Controller/user')
-const { newUserValidator, newJobValidator } = require('../validator/authValidator')
+const { createUser, login, uploadResume, getResume, logoutUser } = require('../Controller/user')
+const { newUserValidator, newJobValidator, newRecruiterValidator } = require('../validator/authValidator')
 const { validate } = require('../middleware/validate')
 const upload = require('../middleware/upload')
+const { newRecruiter, loginRecruiter, updateRecruiter, logoutRecruiter } = require('../Controller/recruiter')
+const { recruiterOnly } = require('../middleware/createToken')
 
 
 const routes=express.Router()
@@ -19,15 +22,25 @@ routes.get('/index',(req,res)=>{
 })
 
 
-routes.post('/newuser',newUserValidator,validate,createUser)
-routes.post('/login',login)
-routes.post('/user/me/resume',protect,upload.single("resume"),uploadResume)
-routes.get('/user/me/resume',protect,getResume);
-routes.post('/admin/signup',newAdmin)
-routes.post('/admin',adminLogin) 
-routes.post('/admin/newjob',protect,adminOnly,newJobValidator,validate,newJob)
-routes.get('/jobs',listJob)
-routes.get('/job/:id',jobOne)
-routes.put('/updatejob/:id',protect,adminOnly,updateJob)
-routes.delete('/deletejob/:id',deleteJob)
-module.exports=routes 
+routes.post('/user/newuser', newUserValidator, validate, createUser)
+routes.post('/user/login', login) 
+routes.post('/user/logout', logoutUser)
+routes.post('/user/me/resume', protect, upload.single("resume"), uploadResume)
+routes.get('/user/me/resume', protect, getResume);
+routes.get('/user/jobs', listJob)
+routes.get('/user/job/:id', jobOne)
+routes.post("/user/applyjob/:jobId",protect, applyJob )
+
+routes.post('/admin/signup', newAdmin)
+routes.post('/admin/login', adminLogin) 
+routes.post('/admin/logout', logoutAdmin)
+
+routes.post('/recruiter/new', newRecruiterValidator, validate, newRecruiter)
+routes.post('/recruiter/login', loginRecruiter)
+routes.post('/recruiter/logout', logoutRecruiter)
+routes.put('/recruiter/profile/:id', protect,  updateRecruiter)
+routes.post('/recruiter/newjob', protect, recruiterOnly, newJobValidator, validate, newJob)
+routes.put('/recruiter/updatejob/:id', protect, recruiterOnly, updateJob)
+routes.delete('/recruiter/deletejob/:id', protect, recruiterOnly, deleteJob)
+
+module.exports= routes 

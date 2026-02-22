@@ -1,7 +1,8 @@
-const { createtoken } = require("../middleware/createToken")
+
 const User = require("../Model/User")
 const asyncHandler=require('../utils/asyncHandler')
 const cloudinary=require("../config/cloudinary");
+const { createToken } = require("../middleware/createToken");
 
 exports.createUser=asyncHandler(async(req,res)=>{
    
@@ -72,7 +73,7 @@ exports.login = asyncHandler(async (req, res) => {
         });
     }
 
-    const token = createtoken(user);
+    const token = createToken(user)
 
     res.status(200).json({
         success: true,
@@ -168,3 +169,8 @@ exports.getResume = asyncHandler(async (req, res) => {
         data: user.resume
     });
 });
+
+exports.logoutUser = (req, res) => {
+    res.clearCookie("token");
+    res.status(200).json({ message: "logout successfully"})
+}

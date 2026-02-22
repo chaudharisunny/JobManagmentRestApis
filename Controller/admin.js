@@ -58,3 +58,8 @@ exports.adminLogin=asyncHandler(async(req,res)=>{
     const token= createtoken(user)
     res.status(201).json({success:true,token})
 })
+
+exports.logoutAdmin = (req, res) => {
+    res.clearCookie("token");
+    res.status(200).json({ message: "logout successfully"})
+}

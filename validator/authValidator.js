@@ -20,7 +20,7 @@ exports.newUserValidator = [
 ]
 
 exports.newJobValidator=[
-    body("titile")
+    body("title")
     .notEmpty()
     .withMessage("title is required"),
 
@@ -38,10 +38,29 @@ exports.newJobValidator=[
     .notEmpty()
     .withMessage("location is required"),
 
-    body("JobType")
+    body("jobType")
     .notEmpty()
     .withMessage("jobType is required")
     .isIn(["part-time","full-time","remote"])
     .withMessage("Invalid job type"),
 ]
 
+exports.newRecruiterValidator=[
+  body("name")
+  .notEmpty()
+  .withMessage("name is required"),
+
+  body("email")
+    .notEmpty()
+    .withMessage("email is required")
+    .isEmail()
+    .withMessage("Invalid email format"),
+
+  body("password")
+  .notEmpty()
+  .withMessage("password is required"),
+
+  body("company")
+  .notEmpty()
+  .withMessage("company is required")
+]
