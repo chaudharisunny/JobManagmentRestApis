@@ -1,6 +1,7 @@
-const { createtoken } = require("../middleware/createToken")
-const User = require("../Model/User")
-const asyncHandler=require("../utils/asyncHandler")
+
+const { createToken } = require("../../middleware/createToken")
+const User = require("../../Model/User")
+const asyncHandler=require("../../utils/asyncHandler")
 
 exports.newAdmin=asyncHandler(async(req,res)=>{
 
@@ -55,7 +56,7 @@ exports.adminLogin=asyncHandler(async(req,res)=>{
         res.status(401).json({success:false,error:"invalid credentials"})
     }
    
-    const token= createtoken(user)
+    const token= createToken(user) 
     res.status(201).json({success:true,token})
 })
 
