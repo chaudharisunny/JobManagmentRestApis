@@ -45,48 +45,124 @@ exports.createUser=asyncHandler(async(req,res)=>{
 })
 
 
+// exports.login = asyncHandler(async (req, res) => {
+//     const { email, password } = req.body;
+
+//     if (!email || !password) {
+//         return res.status(400).json({
+//             success: false,
+//             error: "Email and password are required"
+//         });
+//     }
+
+//     const user = await User.findOne({ email }).select("+password");
+
+//     if (!user) {
+//         return res.status(401).json({
+//             success: false,
+//             error: "email failed"
+//         });
+//     }
+   
+    
+
+//     const isMatch = await user.matchPassword(password);
+
+//     if (!isMatch) {
+//         return res.status(401).json({
+//             success: false,
+//             error: "password fail"
+//         });
+//     }
+   
+    
+
+//     const token = createToken(user)
+
+//     res.status(200).json({
+//         success: true,
+//         token
+//     });
+// });
+
 exports.login = asyncHandler(async (req, res) => {
-    const { email, password } = req.body;
+  const { email, password, role } = req.body;
 
-    if (!email || !password) {
-        return res.status(400).json({
-            success: false,
-            error: "Email and password are required"
-        });
-    }
+  // 1. Validate
+  if (!email || !password || !role) {
+    return res.status(400).json({
+      success: false,
+      error: "Email, password and role are required",
+    });
+  }
 
-    const user = await User.findOne({ email }).select("+password");
+  // 2. Find user
+  const user = await User.findOne({ email }).select("+password");
 
-    if (!user) {
-        return res.status(401).json({
-            success: false,
-            error: "Invalid credentials"
-        });
-    }
+  if (!user) {
+    return res.status(401).json({
+      success: false,
+      error: "Invalid email",
+    });
+  }
 
-    const isMatch = await user.matchPassword(password);
+  // 3. Check password
+  const isMatch = await user.matchPassword(password);
 
-    if (!isMatch) {
-        return res.status(401).json({
-            success: false,
-            error: "Invalid credentials"
-        });
-    }
+  if (!isMatch) {
+    return res.status(401).json({
+      success: false,
+      error: "Invalid password",
+    });
+  }
 
-    const token = createToken(user)
+  // 🔥 4. CHECK ROLE (MAIN FIX)
+  if (!user.roles.includes(role)) {
+    return res.status(403).json({
+      success: false,
+      error: `You are not registered as ${role}`,
+    });
+  }
+
+  // 5. Token
+  const token = createToken(user);
+
+  res.status(200).json({
+    success: true,
+    token,
+    role: user.roles,
+  });
+});
+
+exports.getUsers = asyncHandler(async (req,res)=>{
+    const allUsers = await User.find()
+    res.status(201).json({success:true,
+                        data:allUsers
+                    })
+})
+exports.userProfile = asyncHandler(async (req, res)=>{
+
+    const getProfile = await User.findById(req.user.id).select("-password")
 
     res.status(200).json({
         success: true,
-        token
-    });
-});
+        data: getProfile 
+    })
 
+})
 
+exports.updateProfile = asyncHandler(async (req,res)=>{
+
+    const{id}=req.params
+    const profileUpdate = await User.findByIdAndUpdate(id,req.body,{new:true})
+    
+    res.status(201).json({
+        success: true,
+        data: profileUpdate
+    })
+})
 
 exports.uploadResume = asyncHandler(async (req, res) => {
-
-    console.log("STEP 1 - file received");
-
     if (!req.file) {
         return res.status(400).json({
             success: false,
@@ -94,57 +170,40 @@ exports.uploadResume = asyncHandler(async (req, res) => {
         });
     }
 
-    console.log("STEP 2 - starting cloudinary upload");
-
     const result = await new Promise((resolve, reject) => {
-
         const stream = cloudinary.uploader.upload_stream(
             {
                 folder: "uploads",
-                resource_type: "raw",
-                public_id: `resume_${req.user.id}.pdf`, // force pdf
-                overwrite: true  // ✅ correct place
+                resource_type: "auto",   // ✅ IMPORTANT
+                type: "upload",          // ✅ PUBLIC DELIVERY
+                public_id: `resume_${req.user.id}`,
+                overwrite: true
             },
             (error, result) => {
-
-                if (error) {
-                    console.log("Cloudinary error:", error);
-                    reject(error);
-                } else {
-                    resolve(result);
-                }
+                if (error) reject(error);
+                else resolve(result);
             }
         );
 
         stream.end(req.file.buffer);
     });
 
+    const fixedUrl = result.secure_url + "?t=" + Date.now();
+
     const user = await User.findById(req.user.id);
 
-    if (!user) {
-        return res.status(404).json({
-            success: false,
-            message: "User not found"
-        });
-    }
-
     user.resume = {
-        url: result.secure_url,
+        url: fixedUrl,
         public_id: result.public_id
     };
 
     await user.save();
 
-    console.log("STEP 4 - upload finished");
-
-    const pdfUrl = `https://res.cloudinary.com/${process.env.CLOUDINARY_CLOUD_NAME}/raw/upload/v${result.version}/${result.public_id}.pdf`;
-
     res.status(200).json({
         success: true,
-        url: pdfUrl
+        url: fixedUrl
     });
 });
-
 
 exports.getResume = asyncHandler(async (req, res) => {
 
@@ -169,6 +228,7 @@ exports.getResume = asyncHandler(async (req, res) => {
         data: user.resume
     });
 });
+
 
 exports.logoutUser = (req, res) => {
     res.clearCookie("token");

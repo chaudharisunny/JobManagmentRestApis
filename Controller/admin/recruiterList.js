@@ -8,6 +8,6 @@ exports.getAllRecruiter = asyncHandler( async( req, res) => {
 
     res.status(209).json({
         success: true,
-        users 
+        data:users 
     })
 })

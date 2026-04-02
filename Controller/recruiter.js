@@ -1,13 +1,15 @@
 
 const { createToken } = require("../middleware/createToken");
+const Job = require("../Model/Job");
 const Recruiter = require("../Model/Recruiter");
+const User = require("../Model/User");
 const asyncHandler = require("../utils/asyncHandler");
 
 
 exports.newRecruiter = asyncHandler(async(req,res) => {
      
     const {name,email,password,company}=req.body;
-    const createRecruiter = await Recruiter.create({name,email,password,company})
+    const createRecruiter = await User.create({name,email,password,company})
     return res.status(201).json({ message: "new recruiter create an account", data: createRecruiter})
 })
 
@@ -15,7 +17,7 @@ exports.loginRecruiter = asyncHandler(async (req, res) => {
 
     const { email, password } = req.body;
 
-    const recruiter = await Recruiter
+    const recruiter = await User
         .findOne({ email })
         .select("+password"); // 🔥 VERY IMPORTANT
 
@@ -39,6 +41,18 @@ exports.loginRecruiter = asyncHandler(async (req, res) => {
 
 });
 
+exports.getRecruiterProfile = asyncHandler(async (req,res) => {
+
+    const {id}=req.params
+    if(!id){
+        res.status(500).json({error:'error not found'})
+    }
+    const getProfile = await Recruiter.findById(id,req.body)
+    return res.status(201).json({
+        success: true,
+        data: getProfile
+    })
+})
 exports.updateRecruiter = asyncHandler(async (req, res) => {
     
     const {id} = req.params ;
@@ -60,6 +74,14 @@ exports.deleteRecruiter = asyncHandler(async (req, res) => {
     return res.status(200).json({ message: "deleted account", data:deleteAccount})
 })
 
+exports.getJobsRecruiter = asyncHandler(async (req, res) => {
+
+    const recruiterJob = await Job.find({createdBy:req.user.id})
+    return res.status(201).json({
+        success: true,
+        data: recruiterJob,
+    })
+})
 
 exports.logoutRecruiter = (req, res) => {
     res.clearCookie("token");

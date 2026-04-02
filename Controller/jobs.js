@@ -1,4 +1,5 @@
-const Jobs = require("../Model/Job")
+
+const Job = require("../Model/Job")
 const asyncHandler=require("../utils/asyncHandler")
 
 exports.newJob=asyncHandler(async(req,res)=>{
@@ -6,14 +7,14 @@ exports.newJob=asyncHandler(async(req,res)=>{
     if(!req.user){
         return res.status(401).json({error:"unauthorized"})
     }
-    const{title,description,salary,jobType,location,category,skills}=req.body 
+    const{title,description,salary,jobType,location,category,requirements,responsibilities,skills}=req.body 
 
-    if(!title||!description||!salary||!jobType||!location||!category||!skills){
-        return res.status(409).json({success:false,error:"all field are required"})
+    if(!title||!description||!salary||!jobType||!location||!requirements||!responsibilities||!category||!skills){
+        return res.status(409).json({success:true,error:"all field are required"})
     }
 
-    const createJob= await Jobs.create({
-        title,description,salary,jobType,location,category,skills,createdBy: req.user._id 
+    const createJob= await Job.create({
+        title,description,salary,jobType,location,category,requirements,responsibilities,skills,createdBy: req.user._id 
     })
 
    return res.status(200).json({success:true,data:createJob})
@@ -50,7 +51,8 @@ exports.newJob=asyncHandler(async(req,res)=>{
         query._id = { $lt: cursor };
     }
 
-    const allJobs = await Jobs.find(query)
+    const allJobs = await Job.find(query)
+        .populate("createdBy", "company")
         .sort({ _id: -1 })
         .limit(Number(limit));
 
@@ -68,7 +70,9 @@ exports.newJob=asyncHandler(async(req,res)=>{
    
     const{id}=req.params 
     
-    const selectJob=await Jobs.findById(id)
+    const selectJob=await Job.findById(id)
+     .populate("createdBy", "company name");
+
     if(!selectJob){
         return res.status(404).json({
             success:false,
@@ -81,7 +85,7 @@ exports.newJob=asyncHandler(async(req,res)=>{
 exports.updateJob = asyncHandler(async (req, res) => {
     const { id } = req.params
   
-    const job = await Jobs.findByIdAndUpdate(
+    const job = await Job.findByIdAndUpdate(
       id,
       req.body,
       {
@@ -104,11 +108,20 @@ exports.updateJob = asyncHandler(async (req, res) => {
       data: job
     })
   })
-  
+
+exports.appliedList = asyncHandler(async( req, res)=>{
+
+    const userJobList = await Application.find()
+    return res.status(201).json({
+        success:true,
+        data:userJobList
+    })
+})  
+
 exports.deleteJob=asyncHandler(async(req,res)=>{
     const {id}=req.params 
     
-    const deleteJob=await Jobs.findByIdAndDelete(id)
+    const deleteJob=await Job.findByIdAndDelete(id)
     if(!deleteJob){
        return res.status(404).json(
         {
@@ -122,4 +135,25 @@ exports.deleteJob=asyncHandler(async(req,res)=>{
             message:"job deleted successfully"
         })
 })
+
+
+exports.getSingleJob = asyncHandler(async (req, res) => {
+
+  const { id } = req.params;
+
+  const job = await Job.findById(id);
+
+  if (!job) {
+    return res.status(404).json({
+      success: false,
+      message: "Job not found"
+    });
+  }
+
+  res.status(200).json({
+    success: true,
+    job
+  });
+
+});
 
