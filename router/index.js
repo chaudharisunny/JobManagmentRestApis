@@ -72,7 +72,7 @@
 
 const express=require('express')
 
-const { newJob, listJob, jobOne, updateJob, deleteJob, getSingleJob, } = require('../Controller/jobs')
+const { newJob, listJob, jobOne, updateJob, deleteJob, getSingleJob, appliedList, } = require('../Controller/jobs')
 const { applyJob } = require('../Controller/applyJob')
 const { newAdmin, adminLogin, logoutAdmin } = require('../Controller/admin/adminAuth')
 
@@ -122,6 +122,7 @@ routes.get('/user/jobs', listJob)
 routes.get('/user/job/:id', jobOne)
 routes.post("/user/applyjob/:jobId",protect,upload.single('resume'), applyJob )
 routes.get('/user/joblist',protect, listJob)
+routes.get('/user/appliedlist', protect, appliedList)
 routes.get('/user/alluser',protect,authorizeRoles("admin"),getAllUsers)
 
 // routes.post('/admin/signup', newAdmin)
