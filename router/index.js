@@ -72,7 +72,7 @@
 
 const express=require('express')
 
-const { newJob, listJob, jobOne, updateJob, deleteJob, getSingleJob, appliedList, } = require('../Controller/Job')
+const { newJob, listJob, jobOne, updateJob, deleteJob, getSingleJob, appliedList, } = require('../Controller/jobs')
 const { applyJob } = require('../Controller/applyJob')
 const { newAdmin, adminLogin, logoutAdmin } = require('../Controller/admin/adminAuth')
 
