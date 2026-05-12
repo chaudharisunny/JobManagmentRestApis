@@ -1,12 +1,18 @@
-require("dotenv").config();
-
-const express = require("express");
-const cors = require("cors");
-
+const express = require('express');
 const app = express();
+const port = 3000;
 
-const port = process.env.PORT || 3000;
-const routesIndex = require("./router/index");
+const dotenv = require('dotenv');
+const cors = require('cors');
+const path = require('path');
+const fs = require('fs');
+
+const routesIndex = require('./router/index');
+const connectDB = require('./config/db');
+
+dotenv.config();
+connectDB();
+
 app.use(express.json());
 
 const allowedOrigins = [
@@ -27,14 +33,26 @@ app.use(
   })
 );
 
-app.options("*", cors());
 
-app.get("/test", (req, res) => {
-  res.json({ success: true });
-});
+app.use('/api/v1', routesIndex);
 
-app.use("/api/v1", routesIndex);
+
+// ✅ FINAL FIXED VIEW ROUTE (handles both cases)
+
+
+// ✅ STATIC (optional but fine)
+app.use(
+  "/uploads",
+  express.static(path.join(__dirname, "uploads"), {
+    setHeaders: (res, filePath) => {
+      if (filePath.endsWith(".pdf")) {
+        res.setHeader("Content-Type", "application/pdf");
+        res.setHeader("Content-Disposition", "inline");
+      }
+    },
+  })
+);
 
 app.listen(port, () => {
-  console.log(`Server running on ${port}`);
+  console.log(`Server running on port ${port}`);
 });
