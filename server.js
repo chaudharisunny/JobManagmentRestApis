@@ -18,7 +18,7 @@ app.use(express.json());
 app.use(cors({
   origin: [
     "http://localhost:5173",
-    "https://job-managment-frontend.vercel.app"
+    "https://JobManagment-frontend.vercel.app"
   ],
   credentials: true
 }));
