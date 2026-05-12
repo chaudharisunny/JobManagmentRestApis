@@ -15,15 +15,25 @@ connectDB();
 
 app.use(express.json());
 
+const allowedOrigins = [
+  "http://localhost:5173",
+  "https://job-managment-frontend-jset.vercel.app",
+];
+
 app.use(
   cors({
-    origin: "https://job-managment-frontend-jset.vercel.app",
+    origin: function (origin, callback) {
+      if (!origin || allowedOrigins.includes(origin)) {
+        callback(null, true);
+      } else {
+        callback(new Error("CORS not allowed"));
+      }
+    },
     credentials: true,
-    methods: ["GET", "POST", "PUT", "DELETE"],
+    methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
     allowedHeaders: ["Content-Type", "Authorization"],
   })
 );
-
 
 app.options("*", cors());
 
