@@ -15,13 +15,15 @@ connectDB();
 
 app.use(express.json());
 
-app.use(cors({
-  origin: [
-    "http://localhost:5173",
-    "https://JobManagment-frontend.vercel.app"
-  ],
-  credentials: true
-}));
+app.use(
+  cors({
+    origin: [
+      "http://localhost:5173",
+      "https://job-managment-frontend-jset.vercel.app",
+    ],
+    credentials: true,
+  })
+);
 
 app.use('/api/v1', routesIndex);
 
