@@ -35,7 +35,7 @@ app.use(
   })
 );
 
-app.options("*", cors());
+
 
 app.use('/api/v1', routesIndex);
 
