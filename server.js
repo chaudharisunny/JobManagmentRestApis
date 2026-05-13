@@ -21,7 +21,7 @@ const allowedOrigins = [
   "https://job-managment-frontend-psi.vercel.app",
 ];
 
-app.use(
+
   app.use(
   cors({
     origin: function (origin, callback) {
@@ -37,7 +37,7 @@ app.use(
     },
     credentials: true,
   })
-)); 
+); 
 
 
 app.use('/api/v1', routesIndex);
