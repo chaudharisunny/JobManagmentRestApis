@@ -18,12 +18,18 @@ app.use(express.json());
 const allowedOrigins = [
   "http://localhost:5173",
   "https://job-managment-frontend-jset.vercel.app",
+  "https://job-managment-frontend-psi.vercel.app",
 ];
 
 app.use(
+  app.use(
   cors({
     origin: function (origin, callback) {
-      if (!origin || allowedOrigins.includes(origin)) {
+      if (
+        !origin ||
+        origin.includes("vercel.app") ||
+        origin === "http://localhost:5173"
+      ) {
         callback(null, true);
       } else {
         callback(new Error("CORS not allowed"));
@@ -31,7 +37,7 @@ app.use(
     },
     credentials: true,
   })
-);
+)); 
 
 
 app.use('/api/v1', routesIndex);
