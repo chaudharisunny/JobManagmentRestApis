@@ -111,14 +111,38 @@ exports.updateJob = asyncHandler(async (req, res) => {
     })
   })
 
-exports.appliedList = asyncHandler(async( req, res)=>{
+// exports.appliedList = asyncHandler(async( req, res)=>{
 
-    const userJobList = await Application.find()
-    return res.status(201).json({
-        success:true,
-        data:userJobList
+    
+//     const userJobList = await Application.find({ applicant: req.user.id})
+//     .populate("job").populate("recruiter", "company name")
+   
+//     return res.status(201).json({
+//         success:true,
+//         data:userJobList
+//     })
+// })  
+
+exports.appliedList = asyncHandler(async (req, res) => {
+
+    const userJobList = await Application.find({
+        applicant: req.user.id
     })
-})  
+    .populate({
+        path: "job",
+        select: "title location salary jobType"
+    })
+    .populate({
+        path: "recruiter",
+        select: "company name"
+    });
+console.log("REQ USER ID:", req.user.id);
+    return res.status(200).json({
+        success: true,
+        data: userJobList
+    });
+
+});
 
 exports.deleteJob=asyncHandler(async(req,res)=>{
     const {id}=req.params 
